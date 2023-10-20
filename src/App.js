@@ -1,23 +1,27 @@
-import logo from './logo.svg';
 import { useEffect ,useState} from 'react';
 import './App.css';
 
 function App() {
-  const[activeKey,setActiveKey] = useState("");
-
-  function playSound(keyTrigger) {
-    const audio = document.getElementById(keyTrigger);
+  const [activeClip, setActiveClip] = useState(null);
+  const [checkboxChecked, setCheckboxChecked] = useState(true); // State to track checkbox status
   
-    // Check if the audio element exists
-    if (audio) {
-      if (!audio.paused) {
-        audio.currentTime = 0; // Set currentTime to the beginning
+  function playSound(keyTrigger) {
+    if (!checkboxChecked) return;
+
+    const audioClip = audioClips.find((clip) => clip.keyTrigger === keyTrigger);
+
+    if (audioClip) {
+      const audio = document.getElementById(keyTrigger);
+
+      if (audio) {
+        if (!audio.paused) {
+          audio.currentTime = 0;
+        }
+        audio.play().catch((error) => {
+          console.error('Audio playback error:', error);
+        });
+        setActiveClip(audioClip); // Set the active clip in the display
       }
-      // Play the audio and set the active key
-      audio.play().catch((error) => {
-        console.error('Audio playback error:', error);
-      });
-      setActiveKey(keyTrigger);
     }
   }
   
@@ -86,23 +90,42 @@ function App() {
     <div className='app'>
       <div id="drum-machine" className='container'>
         <h1>Welcome to the Drum Machine</h1>
-        <div id='display'>{activeKey}</div>
-        <div className='drum-pads'>
-          {audioClips.map((drumPad) => (
-            <div
-              key={drumPad.url}
-              onClick={() => playSound(drumPad.keyTrigger)}
-              className='drum-pad'
-              id={drumPad.url}
-            >
-              {drumPad.keyTrigger}
-              <audio
-              className='clip'
-              id={drumPad.keyTrigger}
-              src={drumPad.url}
-          ></audio>
+        <div className='content'>
+          <div className='left'>
+            <div id='display'>{activeClip ? activeClip.description : ''}</div>
+            <div className="checkbox-wrapper-8">
+              <input
+                type="checkbox"
+                id="cb3-8"
+                className="tgl tgl-skewed"
+                checked={checkboxChecked}
+                onChange={() => setCheckboxChecked(!checkboxChecked)} // Toggle checkbox status
+              />
+              <label
+                htmlFor="cb3-8"
+                data-tg-on="ON"
+                data-tg-off="OFF"
+                className="tgl-btn"
+              />
             </div>
-          ))}
+          </div>
+          <div className='drum-pads'>
+            {audioClips.map((drumPad) => (
+              <div
+                key={drumPad.url}
+                onClick={() => playSound(drumPad.keyTrigger)}
+                className={`drum-pad ${!checkboxChecked ? 'disabled' : ''}`}
+                id={drumPad.url}
+              >
+                {drumPad.keyTrigger}
+                <audio
+                  className='clip'
+                  id={drumPad.keyTrigger}
+                  src={drumPad.url}
+                ></audio>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
